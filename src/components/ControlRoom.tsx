@@ -22,17 +22,17 @@ import kukdeThumbSrc from '@assets/kukde_thumb.jpg'
 import '@styles/controlroom.css'
 
 const projects = [
-  { id: '01', title: 'Cloning Mini Project 1 / Web/Mobile UX/UI', category: 'WEB / MOBILE UXUI', position: 'identity', thumbnail: kukdeThumbSrc, previewImage: kukdeSrc },
-  { id: '02', title: 'K-Brand Contents Web/Mobile UX/UI Project', category: 'K-BRAND CONTENTS', position: 'mmca', thumbnail: mmcaThumbSrc, previewImage: mmcaSrc },
   {
     id: '03',
     title: 'AI CHATBOT PLATFORM',
     category: 'AI CHATBOT SUPPORT',
-    position: 'fandom',
+    position: 'identity',
     thumbnail: jibsaLifeThumbSrc,
     previewImage: jibsaLifeSrc,
   },
-  { id: '04', title: 'INNOGRID WEB CLONE PROJECT', category: 'INNOGRID', position: 'app', thumbnail: innogridSrc, previewImage: innogridSrc },
+  { id: '02', title: 'K-Brand Contents Web/Mobile UX/UI Project', category: 'K-BRAND CONTENTS', position: 'mmca', thumbnail: mmcaThumbSrc, previewImage: mmcaSrc },
+  { id: '01', title: 'Cloning Mini Project 1 / Web/Mobile UX/UI', category: 'WEB / MOBILE UXUI', position: 'fandom', thumbnail: kukdeThumbSrc, previewImage: kukdeSrc },
+  { id: '04', title: 'Cloud Platform Landing Page UI Development Project', category: 'INNOGRID', position: 'app', thumbnail: innogridSrc, previewImage: innogridSrc },
 ]
 
 const projectDetails = {
