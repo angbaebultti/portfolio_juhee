@@ -28,6 +28,7 @@ const ENTITY_SIGNAL_FOUND_PROGRESS = 0.055
 const SIGNAL_SYNC_START = 0.055
 const SIGNAL_SYNC_FULL = 0.18
 const WHEEL_TRAVEL_SPEED = 0.014
+const TOUCH_TRAVEL_SPEED = 0.11
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 const smoothstep = (edge0: number, edge1: number, value: number) => {
@@ -412,6 +413,7 @@ const GlassTunnel: FC<GlassTunnelProps> = () => {
     let currentZ = CAMERA_START_Z
     let animationId = 0
     let isAnimating = false
+    let lastTouchY: number | null = null
 
     const getSequenceProgress = () => clamp((CAMERA_START_Z - currentZ) / (CAMERA_START_Z - CAMERA_END_Z), 0, 1)
 
@@ -532,19 +534,51 @@ const GlassTunnel: FC<GlassTunnelProps> = () => {
       animationId = requestAnimationFrame(animateToTarget)
     }
 
-    const onWheel = (event: WheelEvent) => {
+    const moveTunnel = (deltaY: number) => {
       const sequenceProgress = getSequenceProgress()
       const controlRoomOpacity = smoothstep(CONTROL_ROOM_REVEAL_START, CONTROL_ROOM_REVEAL_END, sequenceProgress)
-      const nextTargetZ = clamp(targetZ - event.deltaY * WHEEL_TRAVEL_SPEED, CAMERA_END_Z, CAMERA_START_Z)
+      const nextTargetZ = clamp(targetZ - deltaY, CAMERA_END_Z, CAMERA_START_Z)
       const isTunnelMotion = nextTargetZ !== targetZ
+
+      targetZ = nextTargetZ
+      requestMotion()
+
+      return { controlRoomOpacity, isTunnelMotion }
+    }
+
+    const onWheel = (event: WheelEvent) => {
+      const { controlRoomOpacity, isTunnelMotion } = moveTunnel(event.deltaY * WHEEL_TRAVEL_SPEED)
 
       if (controlRoomOpacity < 0.98 || (isTunnelMotion && event.deltaY < 0)) {
         event.preventDefault()
         window.scrollTo(0, 0)
       }
+    }
 
-      targetZ = nextTargetZ
-      requestMotion()
+    const onTouchStart = (event: TouchEvent) => {
+      lastTouchY = event.touches[0]?.clientY ?? null
+    }
+
+    const onTouchMove = (event: TouchEvent) => {
+      const touchY = event.touches[0]?.clientY
+
+      if (touchY === undefined || lastTouchY === null) return
+
+      const deltaY = lastTouchY - touchY
+      lastTouchY = touchY
+
+      if (Math.abs(deltaY) < 0.5) return
+
+      const { controlRoomOpacity, isTunnelMotion } = moveTunnel(deltaY * TOUCH_TRAVEL_SPEED)
+
+      if (controlRoomOpacity < 0.98 || isTunnelMotion) {
+        event.preventDefault()
+        window.scrollTo(0, 0)
+      }
+    }
+
+    const onTouchEnd = () => {
+      lastTouchY = null
     }
 
     const onResize = () => {
@@ -561,6 +595,10 @@ const GlassTunnel: FC<GlassTunnelProps> = () => {
     canvas.addEventListener('webglcontextlost', onContextLost)
     window.addEventListener('resize', onResize)
     window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+    window.addEventListener('touchcancel', onTouchEnd)
 
     return () => {
       cancelAnimationFrame(animationId)
@@ -569,6 +607,10 @@ const GlassTunnel: FC<GlassTunnelProps> = () => {
       canvas.removeEventListener('webglcontextlost', onContextLost)
       window.removeEventListener('resize', onResize)
       window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchEnd)
       if (entityPanelRef.current) {
         entityPanelRef.current.style.setProperty('--entity-panel-opacity', '0')
         entityPanelRef.current.style.setProperty('--entity-panel-progress', '0')
