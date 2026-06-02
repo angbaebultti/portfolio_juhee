@@ -141,7 +141,7 @@ export default function ControlRoom() {
   const [isConnectionClosing, setIsConnectionClosing] = useState(false)
   const [isAccessingPrimary, setIsAccessingPrimary] = useState(false)
   const [isRoomInteractive, setIsRoomInteractive] = useState(false)
-  const [openProfilePanel, setOpenProfilePanel] = useState<ProfilePanelId>('scan')
+  const [openProfilePanel, setOpenProfilePanel] = useState<ProfilePanelId | null>(null)
   const [profileRevealMode, setProfileRevealMode] = useState<ProfileRevealMode>('ready')
   const [profileLevel, setProfileLevel] = useState(1)
   const hasResetScrollRef = useRef(false)
@@ -454,7 +454,7 @@ export default function ControlRoom() {
     clearProfileCloseTimeout()
     setIsProfileClosing(false)
     setProfileRevealMode(mode)
-    setOpenProfilePanel('scan')
+    setOpenProfilePanel(null)
     setProfileLevel(1)
     setIsProfileOpen(true)
   }
@@ -575,7 +575,7 @@ export default function ControlRoom() {
         className="control-room__accordion-trigger"
         type="button"
         onClick={() => {
-          setOpenProfilePanel(panelId)
+          setOpenProfilePanel((currentPanel) => currentPanel === panelId ? null : panelId)
           upgradeProfileLevel()
         }}
         aria-expanded={openProfilePanel === panelId}
@@ -917,6 +917,9 @@ export default function ControlRoom() {
       >
         {isProfileVisible && (
         <div className={`control-room__profile-shell control-room__profile-shell--level-${profileLevel}`} role="dialog" aria-modal="true" aria-label="User data">
+          <button className="control-room__profile-close" type="button" onClick={closeProfile} aria-label="Close user data" data-hud-click="true">
+            X
+          </button>
           <div className="control-room__analysis">
             <header className="control-room__analysis-header">
               <div className="control-room__analysis-boot">
